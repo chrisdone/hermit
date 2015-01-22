@@ -48,7 +48,6 @@ module HERMIT.PrettyPrinter.Common
 
 import Data.Char
 import Data.Default.Class
-import Data.Monoid hiding ((<>))
 import qualified Data.Map as M
 import Data.Typeable
 

@@ -1,7 +1,6 @@
 {-# LANGUAGE FlexibleContexts, LambdaCase #-}
 module HERMIT.Shell.Completion (shellComplete) where
 
-import Control.Applicative
 import Control.Arrow
 import Control.Monad.State
 

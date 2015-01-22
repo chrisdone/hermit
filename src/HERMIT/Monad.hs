@@ -34,10 +34,8 @@ import Prelude hiding (lookup)
 
 import Data.Dynamic (Typeable)
 import Data.Map
-import Data.Monoid
 import Data.String (IsString(..))
 
-import Control.Applicative
 import Control.Concurrent.STM
 import Control.Monad
 import Control.Monad.IO.Class

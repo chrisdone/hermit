@@ -37,7 +37,6 @@ import Control.Monad
 import Control.Monad.IO.Class
 
 import Data.List
-import Data.Monoid
 
 import HERMIT.Core
 import HERMIT.Context

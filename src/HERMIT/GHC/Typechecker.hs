@@ -19,10 +19,11 @@ import NameSet
 import SrcLoc
 import HscTypes
 import Outputable
+import Module (emptyModuleSet)
 import Data.IORef ( newIORef, readIORef )
 
 import TcEnv ( tcLookupGlobal )
-import TcType   ( noUntouchables )
+import TcType   ( fskTcLevel )
 
 import FastString
 import Bag
@@ -63,6 +64,8 @@ initTcFromModGuts hsc_env guts hsc_src keep_rn_syntax do_this
         th_topnames_var      <- newIORef emptyNameSet ;
         th_modfinalizers_var <- newIORef [] ;
         th_state_var         <- newIORef Map.empty ;
+
+        static_wc_var        <- newIORef emptyWC ;
 
         let {
              maybe_rn_syntax :: forall a. a -> Maybe a ;
@@ -119,7 +122,13 @@ initTcFromModGuts hsc_env guts hsc_src keep_rn_syntax do_this
                 tcg_rn_imports     = [],
                 tcg_rn_exports     = maybe_rn_syntax [],
                 tcg_keep           = keep_var,
-                tcg_th_splice_used = th_splice_var
+                tcg_th_splice_used = th_splice_var,
+
+                tcg_sig_of              = Nothing,
+                tcg_impl_rdr_env        = Nothing,
+                tcg_visible_orphan_mods = emptyModuleSet,
+                tcg_tc_plugins          = [],
+                tcg_static_wc           = static_wc_var
              } ;
              lcl_env = TcLclEnv {
                 tcl_errs       = errs_var,
@@ -134,7 +143,7 @@ initTcFromModGuts hsc_env guts hsc_src keep_rn_syntax do_this
                 tcl_tidy       = emptyTidyEnv,
                 tcl_tyvars     = tvs_var,
                 tcl_lie        = lie_var,
-                tcl_untch      = noUntouchables
+                tcl_tclvl      = fskTcLevel
              } ;
         } ;
 
@@ -161,6 +170,15 @@ initTcFromModGuts hsc_env guts hsc_src keep_rn_syntax do_this
 
         return (msgs, final_res)
     }
+
+pprWantedsWithLocs :: WantedConstraints -> SDoc
+pprWantedsWithLocs wcs
+   =  vcat [ pprBag ppr (wc_simple wcs)
+           , pprBag ppr (wc_impl   wcs)
+           , pprBag ppr (wc_insol  wcs) ]
+
+pprBag :: (a -> SDoc) -> Bag a -> SDoc
+pprBag pp b = foldrBag (($$) . pp) empty b
 
 mk_type_env :: ModGuts -> TypeEnv
 -- copied from GHC.compileCore

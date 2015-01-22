@@ -72,6 +72,7 @@ data CorePass = FloatInwards
               | LiberateCase
               | PrintCore
               | StaticArgs
+              | CallArity
               | Strictness
               | WorkerWrapper
               | Specialising
@@ -101,6 +102,7 @@ ghcPasses = [ (FloatInwards , CoreDoFloatInwards)
             , (LiberateCase , CoreLiberateCase)
             , (PrintCore    , CoreDoPrintCore)
             , (StaticArgs   , CoreDoStaticArgs)
+            , (CallArity    , CoreDoCallArity)
             , (Strictness   , CoreDoStrictness)
             , (WorkerWrapper, CoreDoWorkerWrapper)
             , (Specialising , CoreDoSpecialising)
@@ -119,6 +121,7 @@ getCorePass CoreDoFloatInwards       = FloatInwards
 getCorePass CoreLiberateCase         = LiberateCase
 getCorePass CoreDoPrintCore          = PrintCore
 getCorePass CoreDoStaticArgs         = StaticArgs
+getCorePass CoreDoCallArity          = CallArity
 getCorePass CoreDoStrictness         = Strictness
 getCorePass CoreDoWorkerWrapper      = WorkerWrapper
 getCorePass CoreDoSpecialising       = Specialising

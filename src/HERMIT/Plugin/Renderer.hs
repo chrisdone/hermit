@@ -5,7 +5,6 @@ import Control.Arrow
 import Control.Monad.State
 
 import Data.List (isInfixOf, isPrefixOf, isSuffixOf)
-import Data.Monoid
 
 import HERMIT.Dictionary (traceR)
 import HERMIT.Kure

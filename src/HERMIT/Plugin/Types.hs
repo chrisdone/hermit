@@ -1,16 +1,13 @@
 {-# LANGUAGE TypeFamilies, DeriveDataTypeable, FlexibleContexts,
              LambdaCase, GADTs, GeneralizedNewtypeDeriving,
-             ScopedTypeVariables, FlexibleInstances, CPP #-}
+             ScopedTypeVariables, FlexibleInstances #-}
 module HERMIT.Plugin.Types where
 
-import Control.Applicative
 import Control.Concurrent.STM
-#if MIN_VERSION_mtl(2,2,1)
-import Control.Monad.Except
-#else
-import Control.Monad.Error
-#endif
-import Control.Monad.State
+import Control.Monad.Except (MonadError(..), ExceptT, runExceptT)
+import Control.Monad.IO.Class (MonadIO(..))
+import Control.Monad.State (MonadState(..), StateT(..))
+import Control.Monad.Trans.Class (MonadTrans(..))
 
 import Data.Dynamic
 import qualified Data.Map as M
@@ -26,19 +23,12 @@ import HERMIT.PrettyPrinter.Common
 import System.IO
 
 type PluginM = PluginT IO
-#if MIN_VERSION_mtl(2,2,1)
+
 newtype PluginT m a = PluginT { unPluginT :: ExceptT PException (StateT PluginState m) a }
-#else
-newtype PluginT m a = PluginT { unPluginT :: ErrorT PException (StateT PluginState m) a }
-#endif
     deriving (Functor, Applicative, Monad, MonadIO, MonadError PException, MonadState PluginState)
 
 runPluginT :: PluginState -> PluginT m a -> m (Either PException a, PluginState)
-#if MIN_VERSION_mtl(2,2,1)
 runPluginT ps = flip runStateT ps . runExceptT . unPluginT
-#else
-runPluginT ps = flip runStateT ps . runErrorT . unPluginT
-#endif
 
 instance MonadTrans PluginT where
     lift = PluginT . lift . lift
@@ -70,10 +60,6 @@ data PluginState = PluginState
     } deriving (Typeable)
 
 data PException = PAbort | PResume SAST | PError String
-
-#if !(MIN_VERSION_mtl(2,2,1))
-instance Error PException where strMsg = PError
-#endif
 
 newtype PSBox = PSBox PluginState deriving Typeable
 instance Extern PluginState where

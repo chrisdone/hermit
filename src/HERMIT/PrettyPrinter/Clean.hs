@@ -19,7 +19,6 @@ import Control.Applicative ((<$>))
 
 import Data.Char (isSpace)
 import Data.Default.Class
-import Data.Monoid (mempty)
 
 import HERMIT.Context
 import HERMIT.Core

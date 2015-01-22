@@ -4,20 +4,17 @@
 
 module HERMIT.Shell.Types where
 
-import Control.Applicative
 import Control.Concurrent.STM
-import Control.Monad.State
-#if MIN_VERSION_mtl(2,2,1)
-import Control.Monad.Except
-#else
-import Control.Monad.Error
-#endif
+import Control.Monad (liftM)
+import Control.Monad.Except (MonadError(..), ExceptT(..), runExceptT)
+import Control.Monad.IO.Class (MonadIO(..))
+import Control.Monad.State (MonadState(..), StateT(..), gets, modify)
+import Control.Monad.Trans.Class (MonadTrans(..))
 
 import Data.Dynamic
 import Data.List (intercalate)
 import qualified Data.Map as M
 import Data.Maybe (fromMaybe, isJust)
-import Data.Monoid (mempty)
 
 import HERMIT.Context
 import HERMIT.Core
@@ -137,10 +134,6 @@ data CLException = CLAbort
                  | CLContinue CommandLineState -- TODO: needed?
                  | CLError String
 
-#if !(MIN_VERSION_mtl(2,2,1))
-instance Error CLException where strMsg = CLError
-#endif
-
 abort :: MonadError CLException m => m ()
 abort = throwError CLAbort
 
@@ -171,20 +164,14 @@ rethrowPE (PError msg)   = throwError (CLError msg)
 -- management in the command line code.
 --
 -- NB: an alternative to monad transformers, like Oleg's Extensible Effects, might be useful here.
-#if MIN_VERSION_mtl(2,2,1)
 newtype CLT m a = CLT { unCLT :: ExceptT CLException (StateT CommandLineState m) a }
-#else
-newtype CLT m a = CLT { unCLT :: ErrorT CLException (StateT CommandLineState m) a }
-#endif
     deriving (Functor, Applicative, MonadIO, MonadError CLException, MonadState CommandLineState)
 
 -- Adapted from System.Console.Haskeline.MonadException, which hasn't provided an instance for ExceptT yet
-#if MIN_VERSION_mtl(2,2,1)
 instance MonadException m => MonadException (ExceptT e m) where
     controlIO f = ExceptT $ controlIO $ \(RunIO run) -> let
                     run' = RunIO (fmap ExceptT . run . runExceptT)
                     in fmap runExceptT $ f run'
-#endif
 
 instance MonadException m => MonadException (CLT m) where
     controlIO f = CLT $ controlIO $ \(RunIO run) -> let run' = RunIO (fmap CLT . run . unCLT)
@@ -214,11 +201,7 @@ instance Monad m => Monad (CLT m) where
 
 -- | Run a CLT computation.
 runCLT :: CommandLineState -> CLT m a -> m (Either CLException a, CommandLineState)
-#if MIN_VERSION_mtl(2,2,1)
 runCLT s = flip runStateT s . runExceptT . unCLT
-#else
-runCLT s = flip runStateT s . runErrorT . unCLT
-#endif
 
 -- | Lift a CLT IO computation into a CLT computation over an arbitrary MonadIO.
 clm2clt :: MonadIO m => CLT IO a -> CLT m a

@@ -45,7 +45,6 @@ module HERMIT.Dictionary.Common
 where
 
 import Data.List
-import Data.Monoid
 
 import Control.Arrow
 import Control.Monad.IO.Class

@@ -130,7 +130,8 @@ lintModuleT :: TransformH ModGuts String
 lintModuleT =
   do dynFlags <- dynFlagsT
      bnds     <- arr mg_binds
-     let (warns, errs)    = CoreLint.lintCoreBindings [] bnds -- [] are vars to treat as in scope, used by GHCi
+     -- Use CoreTidy to get the default lint flags
+     let (warns, errs)    = CoreLint.lintCoreBindings CoreTidy [] bnds -- [] are vars to treat as in scope, used by GHCi
          dumpSDocs endMsg = Bag.foldBag (\ d r -> d ++ ('\n':r)) (showSDoc dynFlags) endMsg
      if Bag.isEmptyBag errs
        then return $ dumpSDocs "Core Lint Passed" warns
@@ -212,7 +213,7 @@ buildTypeable ty = do
     evar <- runTcM $ do
         cls <- tcLookupClass typeableClassName
         let predTy = mkClassPred cls [typeKind ty, ty] -- recall that Typeable is now poly-kinded
-        newWantedEvVar predTy
+        newEvVar predTy
     buildDictionary evar
 
 -- | Build a dictionary for the given
@@ -222,7 +223,7 @@ buildDictionary evar = do
         loc <- getCtLoc $ GivenOrigin UnkSkol
         let predTy = varType evar
             nonC = mkNonCanonical $ CtWanted { ctev_pred = predTy, ctev_evar = evar, ctev_loc = loc }
-            wCs = mkFlatWC [nonC]
+            wCs = mkSimpleWC [nonC]
         (wCs', bnds) <- solveWantedsTcM wCs
         -- reportAllUnsolved wCs' -- this is causing a panic with dictionary instantiation
                                   -- revist and fix!

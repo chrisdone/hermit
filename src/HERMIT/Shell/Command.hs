@@ -20,7 +20,6 @@ import Control.Monad.State
 import Data.Char
 import Data.List (isPrefixOf, partition)
 import Data.Maybe
-import Data.Monoid
 
 import HERMIT.Context
 import HERMIT.External

@@ -136,23 +136,23 @@ extra-source-files:
     examples/reverse/Reverse.hss
 
 Library
-  ghc-options: -Wall -fno-warn-orphans
+  ghc-options:   -Wall -fno-warn-orphans
   Build-Depends: base               >= 4 && < 5,
                  ansi-terminal      >= 0.5.5,
                  array,
                  containers         >= 0.5.0.0,
                  data-default-class >= 0.0.1,
                  directory          >= 1.2.0.0,
-                 ghc                >= 7.8,
+                 ghc                >= 7.10,
                  haskeline          >= 0.7.0.3,
                  kure               >= 2.16.4,
                  marked-pretty      >= 0.1,
-                 mtl                >= 2.1.2,
+                 mtl                >= 2.2.1,
                  operational        >= 0.2.2.1,
                  process            >= 1.1.0.2,
                  stm                >= 2.4,
                  temporary          >= 1.2.0.3,
-                 transformers
+                 transformers       >= 0.4.1.0
 
   if os(windows)
     build-depends: Win32

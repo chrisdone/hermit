@@ -45,7 +45,6 @@ import Prelude hiding (lookup)
 
 import Control.Monad (liftM)
 
-import Data.Monoid (mempty)
 import Data.Map hiding (map, foldr, filter)
 
 import Language.KURE

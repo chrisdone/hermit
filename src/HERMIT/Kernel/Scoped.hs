@@ -15,7 +15,6 @@ import Control.Monad
 import Control.Monad.IO.Class
 
 import Data.Maybe (fromMaybe)
-import Data.Monoid (mempty)
 import qualified Data.IntMap as I
 
 import HERMIT.Core
@@ -58,22 +57,22 @@ testPathStackT ps p = testLensT (pathStackToLens ps p :: LensH ModGuts CoreTC)
 
 -- | An alternative HERMIT kernel, that provides scoping.
 data ScopedKernel = ScopedKernel
-    { resumeS      :: (MonadIO m, MonadCatch m) =>               SAST -> m ()
-    , abortS       ::  MonadIO m                =>                       m ()
-    , applyS       :: (MonadIO m, MonadCatch m, Injection ModGuts g, Walker HermitC g)
+    { resumeS      :: forall m. (MonadIO m, MonadCatch m) =>      SAST -> m ()
+    , abortS       :: forall m. MonadIO m                 =>              m ()
+    , applyS       :: forall g m . (MonadIO m, MonadCatch m, Injection ModGuts g, Walker HermitC g)
                    => RewriteH g     -> KernelEnv ->             SAST -> m SAST
-    , queryS       :: (MonadIO m, MonadCatch m, Injection ModGuts g, Walker HermitC g)
+    , queryS       :: forall g m a. (MonadIO m, MonadCatch m, Injection ModGuts g, Walker HermitC g)
                    => TransformH g a -> KernelEnv ->             SAST -> m a
-    , deleteS      :: (MonadIO m, MonadCatch m) =>               SAST -> m ()
-    , listS        ::  MonadIO m                =>                       m [SAST]
-    , pathS        :: (MonadIO m, MonadCatch m) =>               SAST -> m [PathH]
-    , modPathS     :: (MonadIO m, MonadCatch m)
+    , deleteS      :: forall m. (MonadIO m, MonadCatch m) =>     SAST -> m ()
+    , listS        :: forall m. MonadIO m                 =>             m [SAST]
+    , pathS        :: forall m. (MonadIO m, MonadCatch m) =>     SAST -> m [PathH]
+    , modPathS     :: forall m. (MonadIO m, MonadCatch m)
                    => (LocalPathH -> LocalPathH) -> KernelEnv -> SAST -> m SAST
-    , beginScopeS  :: (MonadIO m, MonadCatch m) =>               SAST -> m SAST
-    , endScopeS    :: (MonadIO m, MonadCatch m) =>               SAST -> m SAST
+    , beginScopeS  :: forall m. (MonadIO m, MonadCatch m) =>     SAST -> m SAST
+    , endScopeS    :: forall m. (MonadIO m, MonadCatch m) =>     SAST -> m SAST
     -- means of accessing the underlying kernel, obviously for unsafe purposes
     , kernelS      ::                                                    Kernel
-    , toASTS       :: (MonadIO m, MonadCatch m) =>               SAST -> m AST
+    , toASTS       :: forall m. (MonadIO m, MonadCatch m) =>     SAST -> m AST
     }
 
 -- | A /handle/ for an 'AST' combined with scoping information.

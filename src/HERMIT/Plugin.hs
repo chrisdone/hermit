@@ -1,4 +1,4 @@
-{-# LANGUAGE KindSignatures, GADTs, FlexibleContexts, GeneralizedNewtypeDeriving, LambdaCase, CPP #-}
+{-# LANGUAGE KindSignatures, GADTs, FlexibleContexts, GeneralizedNewtypeDeriving, LambdaCase #-}
 module HERMIT.Plugin
     ( -- * The HERMIT Plugin
       hermitPlugin
@@ -31,13 +31,11 @@ module HERMIT.Plugin
 import Control.Applicative
 import Control.Arrow
 import Control.Concurrent.STM
-#if MIN_VERSION_mtl(2,2,1)
-import Control.Monad.Except hiding (guard)
-#else
-import Control.Monad.Error hiding (guard)
-#endif
+import Control.Monad (replicateM_, when)
+import Control.Monad.IO.Class (MonadIO(..))
 import Control.Monad.Operational
-import Control.Monad.State hiding (guard)
+import Control.Monad.State (gets, modify)
+import Control.Monad.Trans.Class (MonadTrans(..))
 
 import Data.Monoid
 import qualified Data.Map as M
@@ -48,7 +46,7 @@ import HERMIT.Kernel (KernelEnv)
 import HERMIT.Kernel.Scoped
 import HERMIT.Context
 import HERMIT.Kure
-import HERMIT.GHC hiding (singleton, liftIO, display, (<>))
+import HERMIT.GHC hiding (singleton, liftIO, (<>))
 import qualified HERMIT.GHC as GHC
 
 import HERMIT.Plugin.Builder
@@ -128,7 +126,7 @@ eval comp = do
             p <- runK (queryS kernel tp env)  -- run the pathfinding translation
             runS $ beginScopeS kernel         -- remember the current path
             runS $ modPathS kernel (<> p) env -- modify the current path
-            r <- eval m             	      -- run the focused computation
+            r <- eval m                       -- run the focused computation
             runS $ endScopeS kernel           -- endscope on it, so we go back to where we started
             eval $ k r
 

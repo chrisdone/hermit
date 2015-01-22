@@ -83,9 +83,9 @@ import           StaticFlags
 #endif
 import           TcEnv (tcLookupClass)
 import           TcErrors (reportAllUnsolved)
-import           TcMType (newWantedEvVar)
+import           TcMType (newEvVar)
 import           TcRnMonad (getCtLoc, initIfaceTcRn)
-import           TcRnTypes (TcM, mkNonCanonical, mkFlatWC, CtEvidence(..), SkolemInfo(..), CtOrigin(..))
+import           TcRnTypes (TcM, mkNonCanonical, mkSimpleWC, CtEvidence(..), SkolemInfo(..), CtOrigin(..))
 import           TcSimplify (solveWantedsTcM)
 import           TcType (mkPhiTy, mkSigmaTy)
 import           TypeRep (Type(..),TyLit(..))
@@ -161,13 +161,13 @@ ppIdInfo v info
     , (has_strictness, ptext (sLit "Str=") <> pprStrictness str_info)
     , (has_unf,        ptext (sLit "Unf=") <> ppr unf_info)
     , (notNull rules,  ptext (sLit "RULES:") <+> vcat (map ppr rules))
-    ]	-- Inline pragma, occ, demand, lbvar info
-	-- printed out with all binders (when debug is on);
-	-- see PprCore.pprIdBndr
+    ]   -- Inline pragma, occ, demand, lbvar info
+        -- printed out with all binders (when debug is on);
+        -- see PprCore.pprIdBndr
   where
     pp_scope | isGlobalId v   = ptext (sLit "GblId")
-    	     | isExportedId v = ptext (sLit "LclIdX")
-    	     | otherwise      = ptext (sLit "LclId")
+             | isExportedId v = ptext (sLit "LclIdX")
+             | otherwise      = ptext (sLit "LclId")
 
     arity = arityInfo info
     has_arity = arity /= 0
