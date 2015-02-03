@@ -25,10 +25,15 @@ import System.IO
 type PluginM = PluginT IO
 
 newtype PluginT m a = PluginT { unPluginT :: ExceptT PException (StateT PluginState m) a }
-    deriving (Functor, Applicative, Monad, MonadIO, MonadError PException, MonadState PluginState)
+    deriving (Functor, Applicative, MonadIO, MonadError PException, MonadState PluginState)
 
 runPluginT :: PluginState -> PluginT m a -> m (Either PException a, PluginState)
 runPluginT ps = flip runStateT ps . runExceptT . unPluginT
+
+instance Monad m => Monad (PluginT m) where
+    return = PluginT . return
+    PluginT m >>= k = PluginT (m >>= unPluginT . k)
+    fail = PluginT . throwError . PError
 
 instance MonadTrans PluginT where
     lift = PluginT . lift . lift
